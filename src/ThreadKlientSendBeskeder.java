@@ -2,11 +2,11 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Scanner;
 
-public class ThreadKlientSendMessages implements Runnable{
+public class ThreadKlientSendBeskeder implements Runnable{
     DataOutputStream dataOutStream;
     Scanner scan;
 
-    public ThreadKlientSendMessages(DataOutputStream dataOutStream, Scanner scan) {
+    public ThreadKlientSendBeskeder(DataOutputStream dataOutStream, Scanner scan) {
         this.dataOutStream = dataOutStream;
         this.scan = scan;
     }
@@ -14,9 +14,9 @@ public class ThreadKlientSendMessages implements Runnable{
     @Override
     public void run() {
         while (true) {
-            String msg = scan.nextLine();
+            String besked = scan.nextLine();
             try {
-                dataOutStream.writeUTF(msg);
+                dataOutStream.writeUTF(besked);
             } catch (IOException e) {
                 e.printStackTrace();
                 break;

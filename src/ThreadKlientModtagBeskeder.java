@@ -1,7 +1,7 @@
 import java.io.DataInputStream;
 import java.io.IOException;
 
-public class ThreadKlientRecieveMessages implements Runnable{
+public class ThreadKlientModtagBeskeder implements Runnable{
     DataInputStream dataInStream;
 
     @Override
@@ -9,7 +9,7 @@ public class ThreadKlientRecieveMessages implements Runnable{
         while (true) {
             try {
                 String besked = dataInStream.readUTF();
-                System.out.println(msg);
+                System.out.println(besked);
             } catch (IOException e) {
                 e.printStackTrace();
                 break;
