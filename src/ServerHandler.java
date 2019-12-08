@@ -13,7 +13,7 @@ public class ServerHandler {
                 return "brugernavn må kun være mellem 1 til 12 tegn";
 
             // Brugernavnet skal være unikt. Inden vi opretter brugeren tjekker vi derfor vores kleitnBrugernavn arrayliste og ser om det samme brugernavn allerede eksisterer
-            } else if (Server.klientBrugernavn.contains(brugernavn)) {
+            } else if (Server.clientUsernames.contains(brugernavn)) {
                 return "Brugernavn eksiterer allerede. Prøv et andet";
             }
 
@@ -22,7 +22,7 @@ public class ServerHandler {
         }
 
         // Her tilføjer vi brugernavn til vores arrayliste  og returnere med teksten "J_OK"
-        Server.klientBrugernavn.add(brugernavn);
+        Server.clientUsernames.add(brugernavn);
         return "J_OK";
     }
 }
