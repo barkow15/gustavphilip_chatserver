@@ -6,17 +6,35 @@ import java.net.Socket;
 import java.util.Scanner;
 
 public class Klient {
-    private final static Scanner scan = new Scanner(System.in); // Scanner til at kunne skrive til konsollen
+    public final static Scanner scan = new Scanner(System.in); // Scanner til at kunne skrive til konsollen
     private DataInputStream dataInStream; // Inputstream til at modtage data
     private DataOutputStream dataOutStream; // Outputstream til at sende data
     private Socket sock;
     private String serverIP;
     private int    serverPort;
     private String brugernavn;
+    private boolean holdILive;
+    private Thread   klientModBesked;
+    private Thread   klientSendBesked;
+    private Thread   klientHeartbeat;
 
     public Klient(String serverIP, int serverPort){
         System.out.println("Indtast et brugernavn du ønsker at anvende:");
         this.brugernavn = scan.nextLine();
+
+        System.out.println("Ønsker du at holde forbindelsen åben? [JA/NEJ]");
+        while(true){
+            String svar = scan.nextLine();
+            if(svar.equals("JA")){
+                this.holdILive = true;
+                break;
+            }else if(svar.equals("NEJ")){
+                this.holdILive = false;
+                break;
+            }else{
+                System.out.println("Forstod ikke dit svar. Prøv igen.");
+            }
+        }
 
         this.serverIP   = serverIP;
         this.serverPort = serverPort;
@@ -27,20 +45,39 @@ public class Klient {
         while(true) {
             try {
                 InetAddress ip = InetAddress.getByName(this.serverIP);
-                Socket s = new Socket(ip, this.serverPort);
+                this.sock = new Socket(ip, this.serverPort);
                 this.dataInStream   = new DataInputStream(this.sock.getInputStream());
                 this.dataOutStream  = new DataOutputStream(this.sock.getOutputStream());
                 System.out.println("Sender brugeroplysninger...");
+                // Send forbindelses anmodning
                 dataOutStream.writeUTF("JOIN " + this.brugernavn + ", " + this.serverIP + ":" + this.serverPort);
                 String result = dataInStream.readUTF();
-                System.out.println(result);
                 if (result.equals("J_OK")) {
+                    System.out.println("< Forbindelse etableret. Server svar: " + result + " >");
+                    // Initier tråde for at modtage og sende beskeder
+                    this.initModtagSend();
+                    if(this.holdILive){
+                        // Intier tråd for at sende heartbeat besked til server og holde forbindelse åben
+                        this.initHeartbeat();
+                    }
                     break;
                 }
             } catch (IOException e) {
                 System.out.println("IP eller PORT er ikke korrekt eller server er ikke tilgængelig. Prøv igen...");
             }
         }
+    }
+
+    private void initModtagSend(){
+        this.klientSendBesked = new Thread(new ThreadKlientSendBeskeder(this.dataOutStream));
+        this.klientModBesked = new Thread(new ThreadKlientModtagBeskeder(this.dataInStream));
+
+        this.klientSendBesked.start();
+        this.klientModBesked.start();
+    }
+    private void initHeartbeat(){
+        this.klientHeartbeat = new Thread(new ThreadKlientHeartbeat(this.dataOutStream));
+        this.klientHeartbeat.start();
     }
 
     /**
@@ -60,5 +97,69 @@ public class Klient {
 
     public void setDataOutStream(DataOutputStream dataOutStream) {
         this.dataOutStream = dataOutStream;
+    }
+
+    public Socket getSock() {
+        return sock;
+    }
+
+    public void setSock(Socket sock) {
+        this.sock = sock;
+    }
+
+    public String getServerIP() {
+        return serverIP;
+    }
+
+    public void setServerIP(String serverIP) {
+        this.serverIP = serverIP;
+    }
+
+    public int getServerPort() {
+        return serverPort;
+    }
+
+    public void setServerPort(int serverPort) {
+        this.serverPort = serverPort;
+    }
+
+    public String getBrugernavn() {
+        return brugernavn;
+    }
+
+    public void setBrugernavn(String brugernavn) {
+        this.brugernavn = brugernavn;
+    }
+
+    public boolean isHoldILive() {
+        return holdILive;
+    }
+
+    public void setHoldILive(boolean holdILive) {
+        this.holdILive = holdILive;
+    }
+
+    public Thread getKlientModBesked() {
+        return klientModBesked;
+    }
+
+    public void setKlientModBesked(Thread klientModBesked) {
+        this.klientModBesked = klientModBesked;
+    }
+
+    public Thread getKlientSendBesked() {
+        return klientSendBesked;
+    }
+
+    public void setKlientSendBesked(Thread klientSendBesked) {
+        this.klientSendBesked = klientSendBesked;
+    }
+
+    public Thread getKlientHeartbeat() {
+        return klientHeartbeat;
+    }
+
+    public void setKlientHeartbeat(Thread klientHeartbeat) {
+        this.klientHeartbeat = klientHeartbeat;
     }
 }

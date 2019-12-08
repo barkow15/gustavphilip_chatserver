@@ -4,6 +4,10 @@ import java.io.IOException;
 public class ThreadKlientModtagBeskeder implements Runnable{
     DataInputStream dataInStream;
 
+    public ThreadKlientModtagBeskeder(DataInputStream dataInStream){
+        this.dataInStream = dataInStream;
+    }
+
     @Override
     public void run() {
         while (true) {
