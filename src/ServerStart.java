@@ -13,8 +13,6 @@ public class ServerStart {
 
     private Server ClientHandler;
 
-
-
     public void startServer() throws IOException {
 
         ServerSocket serverSocket = new ServerSocket(8888);
@@ -40,7 +38,6 @@ public class ServerStart {
 
             thread.start();
         }
-
 
     }
 
