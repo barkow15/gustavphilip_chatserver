@@ -4,17 +4,19 @@ import java.util.Scanner;
 
 public class ThreadKlientSendBeskeder implements Runnable{
     DataOutputStream dataOutStream;
-    Scanner scan;
 
-    public ThreadKlientSendBeskeder(DataOutputStream dataOutStream, Scanner scan) {
+    public ThreadKlientSendBeskeder(DataOutputStream dataOutStream) {
         this.dataOutStream = dataOutStream;
-        this.scan = scan;
     }
 
     @Override
     public void run() {
         while (true) {
-            String besked = scan.nextLine();
+            String besked = Klient.scan.nextLine();
+
+            if(besked.equals("QUIT")){
+                System.out.println("Lukker applikation...");
+            }
             try {
                 dataOutStream.writeUTF(besked);
             } catch (IOException e) {
