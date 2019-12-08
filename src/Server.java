@@ -13,8 +13,10 @@ public class Server {
     static ArrayList<String>        klientBrugernavne = new ArrayList<>();
     static ArrayList<Klienthandler> klienter = new ArrayList<Klienthandler>();
     private Server Klienthandler;
+    private ServerHandler serverHandler;
 
     public Server(){
+        serverHandler = new ServerHandler();
         try {
             this.serverSocket = new ServerSocket(8888);
         } catch (IOException e) {
@@ -32,18 +34,22 @@ public class Server {
             this.dataInputStream = new DataInputStream(socket.getInputStream());
             this.dataOutputStream = new DataOutputStream(socket.getOutputStream());
 
-            System.out.println("Laver ny handler til klient");
+            
+            String joinAnmodning = dataInputStream.readUTF();
+            String brugernavn = joinAnmodning.substring(5, joinAnmodning.indexOf(','));
+            String bekraeftNavn = serverHandler.opretNavn(brugernavn);
+            if(bekraeftNavn.equals("J_OK")){
+                dataOutputStream.writeUTF(bekraeftNavn);
+                System.out.println("Laver ny handler til klient");
+                Klienthandler klienthandler = new Klienthandler(socket, dataInputStream, dataOutputStream, brugernavn);
+                Thread thread = new Thread(klienthandler);
+                System.out.println("Tilføjer klient til klient liste");
+                this.klienter.add(klienthandler);
 
-
-            Klienthandler klienthandler = new Klienthandler(socket, dataInputStream, dataOutputStream);
-
-            Thread thread = new Thread(klienthandler);
-
-            System.out.println("Tilføjer klient til klient liste");
-
-            this.klienter.add(klienthandler);
-
-            thread.start();
+                thread.start();
+            }else if(bekraeftNavn.startsWith("J_ER")){
+                dataOutputStream.writeUTF(bekraeftNavn);
+            }
         }
 
     }

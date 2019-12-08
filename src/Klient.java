@@ -19,23 +19,6 @@ public class Klient {
     private Thread   klientHeartbeat;
 
     public Klient(String serverIP, int serverPort){
-        System.out.println("Indtast et brugernavn du ønsker at anvende:");
-        this.brugernavn = scan.nextLine();
-
-        System.out.println("Ønsker du at holde forbindelsen åben? [JA/NEJ]");
-        while(true){
-            String svar = scan.nextLine();
-            if(svar.equals("JA")){
-                this.holdILive = true;
-                break;
-            }else if(svar.equals("NEJ")){
-                this.holdILive = false;
-                break;
-            }else{
-                System.out.println("Forstod ikke dit svar. Prøv igen.");
-            }
-        }
-
         this.serverIP   = serverIP;
         this.serverPort = serverPort;
     }
@@ -44,6 +27,9 @@ public class Klient {
         System.out.println("Starter forbindelse til server...");
         while(true) {
             try {
+                System.out.println("Indtast et brugernavn du ønsker at anvende:");
+                this.brugernavn = scan.nextLine();
+
                 InetAddress ip = InetAddress.getByName(this.serverIP);
                 this.sock = new Socket(ip, this.serverPort);
                 this.dataInStream   = new DataInputStream(this.sock.getInputStream());
@@ -51,9 +37,26 @@ public class Klient {
                 System.out.println("Sender brugeroplysninger...");
                 // Send forbindelses anmodning
                 dataOutStream.writeUTF("JOIN " + this.brugernavn + ", " + this.serverIP + ":" + this.serverPort);
+
                 String result = dataInStream.readUTF();
                 if (result.equals("J_OK")) {
-                    System.out.println("< Forbindelse etableret. Server svar: " + result + " >");
+                    System.out.println("Forbindelse etableret. Server svar: " + result);
+                    System.out.println("Ønsker du at holde forbindelsen åben? [JA/NEJ]");
+
+                    // Spørg om forbindelsen ønskes holdt åben
+                    while(true){
+                        String svar = scan.nextLine();
+                        if(svar.equals("JA")){
+                            this.holdILive = true;
+                            break;
+                        }else if(svar.equals("NEJ")){
+                            this.holdILive = false;
+                            break;
+                        }else{
+                            System.out.println("Forstod ikke dit svar. Prøv igen.");
+                        }
+                    }
+
                     // Initier tråde for at modtage og sende beskeder
                     this.initModtagSend();
                     if(this.holdILive){
@@ -61,6 +64,9 @@ public class Klient {
                         this.initHeartbeat();
                     }
                     break;
+                } else if (result.startsWith("J_ER")) {
+                    // Vis fejlbeskeden hvis det er en fejlbesked der er modtaget
+                    System.out.println(result);
                 }
             } catch (IOException e) {
                 System.out.println("IP eller PORT er ikke korrekt eller server er ikke tilgængelig. Prøv igen...");
@@ -69,7 +75,7 @@ public class Klient {
     }
 
     private void initModtagSend(){
-        this.klientSendBesked = new Thread(new ThreadKlientSendBeskeder(this.dataOutStream));
+        this.klientSendBesked = new Thread(new ThreadKlientSendBeskeder(this.dataOutStream, this.brugernavn));
         this.klientModBesked = new Thread(new ThreadKlientModtagBeskeder(this.dataInStream));
 
         this.klientSendBesked.start();

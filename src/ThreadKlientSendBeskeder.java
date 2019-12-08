@@ -4,9 +4,11 @@ import java.util.Scanner;
 
 public class ThreadKlientSendBeskeder implements Runnable{
     DataOutputStream dataOutStream;
+    String brugernavn;
 
-    public ThreadKlientSendBeskeder(DataOutputStream dataOutStream) {
+    public ThreadKlientSendBeskeder(DataOutputStream dataOutStream, String brugernavn) {
         this.dataOutStream = dataOutStream;
+        this.brugernavn = brugernavn;
     }
 
     @Override
@@ -18,7 +20,7 @@ public class ThreadKlientSendBeskeder implements Runnable{
                 System.out.println("Lukker applikation...");
             }
             try {
-                dataOutStream.writeUTF(besked);
+                dataOutStream.writeUTF("DATA " + brugernavn + " : " + besked);
             } catch (IOException e) {
                 e.printStackTrace();
                 break;
