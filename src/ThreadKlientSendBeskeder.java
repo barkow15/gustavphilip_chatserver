@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.util.Scanner;
 
 public class ThreadKlientSendBeskeder implements Runnable{
+
     DataOutputStream dataOutStream;
 
     public ThreadKlientSendBeskeder(DataOutputStream dataOutStream) {
