@@ -12,7 +12,7 @@ public class ThreadKlientHeartbeat implements Runnable{
     public void run() {
         while (true) {
             try {
-                Thread.sleep(1000);
+                Thread.sleep(60000);
                 dataOutStream.writeUTF("IMAV");
             } catch (InterruptedException | IOException e) {
                 e.printStackTrace();
